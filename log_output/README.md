@@ -14,4 +14,4 @@ A simple Node.js app that creates a random token on launch, stores it in RAM, an
 
 ## Kubernetes Deployment
 
-Apply the manifest: `kubectl apply -f manifest/deployment.yaml`
+Apply the manifest: `kubectl create deployment --image=hismyhill/kubernetssubmissions:latest`
