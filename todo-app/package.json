@@ -1,0 +1,10 @@
+{
+  "name": "todo-app",
+  "version": "1.0.0",
+  "description": "Outputs a random memory-stored string every 5 seconds",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {}
+}
