@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: todo-app
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: todo-app
@@ -13,5 +14,8 @@ spec:
     spec:
       containers:
         - name: todo-app
-          image: hismyh/todo-app:latest
+          image: hismyhill/todo-app:v2.0
           imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
