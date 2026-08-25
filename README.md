@@ -10,3 +10,4 @@
 - [1.4.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [1.5.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [1.6.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
+- [1.7.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
