@@ -1,24 +1,37 @@
 // index.js
-// A simple Node.js web server that dynamically binds to an environment variable port
 const http = require("http");
+const crypto = require("crypto");
 
-// Fallback to 3000 if PORT environment variable is not provided
 const PORT = process.env.PORT || 3000;
 
-// const server = http.createServer((req, res) => {
-//   res.writeHead(200, { "Content-Type": "text/plain" });
-//   res.end("Todo App is running!\n");
-// });
+// Generate random string and store in memory on startup
+const randomString = crypto.randomUUID();
+
+// Log status to console immediately and repeat every 5 seconds
+const logStatus = () => {
+  const timestamp = new Date().toISOString();
+  console.log(`${timestamp}: ${randomString}`);
+};
+logStatus();
+setInterval(logStatus, 5000);
+
 const server = http.createServer((req, res) => {
-  // Check if the request is a GET method and targeting the root URL
+  // New status endpoint for the log-output application
+  if (req.method === "GET" && req.url === "/status") {
+    const timestamp = new Date().toISOString();
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ timestamp, randomString }));
+  }
+
+  // Original SPA route
   if (req.method === "GET" && req.url === "/") {
     res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(htmlContent);
-  } else {
-    // Fallback for any other route
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("404 Not Found");
+    return res.end(htmlContent);
   }
+
+  // Fallback route
+  res.writeHead(404, { "Content-Type": "text/plain" });
+  res.end("404 Not Found");
 });
 
 const htmlContent = `
@@ -55,7 +68,6 @@ const htmlContent = `
 </html>
 `;
 
-// Outputs the exact string required by the assignment instructions
 server.listen(PORT, () => {
   console.log(`Server started in port ${PORT}`);
 });
