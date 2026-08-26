@@ -18,9 +18,20 @@ setInterval(logStatus, 5000);
 const server = http.createServer((req, res) => {
   // New status endpoint for the log-output application
   if (req.method === "GET" && req.url === "/status") {
-    const timestamp = new Date().toISOString();
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ timestamp, randomString }));
+    try {
+      if (fs.existsSync(FILE_PATH)) {
+        const fileContent = fs.readFileSync(FILE_PATH, "utf8");
+
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        return res.end(fileContent);
+      } else {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        return res.end("Waiting for log generator to write first status...\n");
+      }
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "text/plain" });
+      return res.end("Error reading status file\n");
+    }
   }
 
   // Original SPA route
