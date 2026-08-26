@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shared-app-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          # Route /pingpong to the ping-pong service
+          - path: /pingpong
+            pathType: Prefix
+            backend:
+              service:
+                name: ping-pong-svc
+                port:
+                  number: 3001
+          # Route root and all other paths to the log-output service
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: log-output-svc
+                port:
+                  number: 3000

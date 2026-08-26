@@ -12,3 +12,4 @@
 - [1.6.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [1.7.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [1.8.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
+- [1.9.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/ping-pong)

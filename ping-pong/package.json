@@ -1,5 +1,5 @@
 {
-  "name": "log-output",
+  "name": "ping-pong",
   "version": "1.0.0",
   "description": "Outputs a random memory-stored string every 5 seconds",
   "main": "index.js",
