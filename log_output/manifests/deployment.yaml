@@ -12,10 +12,12 @@ spec:
       labels:
         app: log-output
     spec:
+      securityContext:
+        fsGroup: 2000
       volumes:
-        - name: shared-logs
-          emptyDir: {}
-
+        - name: output-volume
+          persistentVolumeClaim:
+            claimName: output-pvc
       containers:
         # Container 1: The Writer (Using your app image)
         - name: log-generator
@@ -23,8 +25,11 @@ spec:
           env:
             - name: MODE
               value: "writer"
+          securityContext:
+            runAsUser: 0 # Force container to execute as root
+            runAsGroup: 0
           volumeMounts:
-            - name: shared-logs
+            - name: output-volume
               mountPath: /usr/share/app/files
 
         # Container 2: The Reader (Using your app image)
@@ -35,6 +40,9 @@ spec:
               value: "reader"
           ports:
             - containerPort: 3000
+          securityContext:
+            runAsUser: 0 # Force container to execute as root
+            runAsGroup: 0
           volumeMounts:
-            - name: shared-logs
+            - name: output-volume
               mountPath: /usr/share/app/files

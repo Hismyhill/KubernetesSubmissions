@@ -12,7 +12,14 @@ spec:
       labels:
         app: ping-pong
     spec:
+      volumes:
+        - name: output-volume
+          persistentVolumeClaim:
+            claimName: output-pvc
       containers:
         - name: ping-pong
           image: hismyhill/ping-pong:latest
           imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: output-volume
+              mountPath: /usr/share/app/files
