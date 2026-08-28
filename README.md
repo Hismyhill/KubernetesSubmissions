@@ -14,4 +14,5 @@
 - [1.8.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [1.9.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/ping-pong)
 - [1.10.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/log_output)
-- [1.10.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/persistent-definitions)
+- [1.11.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/persistent-definitions)
+- [1.12.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
