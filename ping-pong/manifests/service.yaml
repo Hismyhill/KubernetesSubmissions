@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: ping-pong-svc
 spec:
+  type: ClusterIP
   selector:
     app: ping-pong
   ports:
-    - protocol: TCP
-      port: 3001
-      targetPort: 3001
+    - port: 8666
+      protocol: TCP
+      targetPort: 3001 # Updated to match your code's default port

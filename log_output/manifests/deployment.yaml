@@ -12,37 +12,16 @@ spec:
       labels:
         app: log-output
     spec:
-      securityContext:
-        fsGroup: 2000
-      volumes:
-        - name: output-volume
-          persistentVolumeClaim:
-            claimName: output-pvc
       containers:
-        # Container 1: The Writer (Using your app image)
-        - name: log-generator
-          image: hismyhill/log_output:v2.0 # <--- SAME IMAGE
+        - name: log-output-server
+          image: hismyhill/log_output:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: MODE
-              value: "writer"
-          securityContext:
-            runAsUser: 0 # Force container to execute as root
-            runAsGroup: 0
-          volumeMounts:
-            - name: output-volume
-              mountPath: /usr/share/app/files
-
-        # Container 2: The Reader (Using your app image)
-        - name: log-web-server
-          image: hismyhill/log_output:v2.0 # <--- SAME IMAGE
-          env:
-            - name: MODE
-              value: "reader"
+              value: "reader" # Standard server mode which fetches and serves HTTP data
+            - name: PINGPONG_URL
+              value: "http://ping-pong-svc:8666/pings" # Update with your exact Ping Pong service name/port
+            - name: PORT
+              value: "3000"
           ports:
             - containerPort: 3000
-          securityContext:
-            runAsUser: 0 # Force container to execute as root
-            runAsGroup: 0
-          volumeMounts:
-            - name: output-volume
-              mountPath: /usr/share/app/files

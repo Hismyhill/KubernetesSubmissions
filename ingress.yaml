@@ -6,19 +6,20 @@ spec:
   rules:
     - http:
         paths:
-          # Route /pingpong to the ping-pong service
-          - path: /pingpong
-            pathType: Prefix
-            backend:
-              service:
-                name: ping-pong-svc
-                port:
-                  number: 3001
-          # Route root and all other paths to the log-output service
+          # Route traffic for Log Output application
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: log-output-svc
                 port:
-                  number: 3000
+                  number: 80
+
+          # Route traffic for Ping Pong application (adjust path/rewrites as needed)
+          - path: /pingpong
+            pathType: Prefix
+            backend:
+              service:
+                name: ping-pong-svc
+                port:
+                  number: 8666

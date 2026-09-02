@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: log-output-svc
 spec:
+  type: ClusterIP
   selector:
-    app: log-output
+    app: log-output # Must match your log-output deployment label
   ports:
     - protocol: TCP
-      port: 3000
-      targetPort: 3000
+      port: 80 # The external-facing port inside the cluster
+      targetPort: 3000 # The containerPort of your log-web-server

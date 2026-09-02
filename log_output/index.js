@@ -1,30 +1,52 @@
 // index.js
 const http = require("http");
-const fs = require("fs");
-const path = require("path");
 const crypto = require("crypto");
 
 const PORT = process.env.PORT || 3000;
 const MODE = process.env.MODE || "reader"; // Options: "writer" or "reader"
-const FILE_PATH = path.join("/usr/share/app/files", "status.txt");
 
-// Ensure the directory exists before doing any operations
-const dir = path.dirname(FILE_PATH);
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
-}
+// Read the internal Kubernetes service URL from environment variables
+const PINGPONG_URL =
+  process.env.PINGPONG_URL || "http://pingpong-svc:2523/pings";
+
+// State variable to store the latest logs globally in application memory
+let latestStatus = "Waiting for data...";
+
+// Generate the random string once upon application initialization
+const randomString = crypto.randomUUID();
+
+// Helper function to fetch the current pong counter from the ping-pong app via HTTP
+const fetchPongs = () => {
+  return new Promise((resolve) => {
+    http
+      .get(PINGPONG_URL, (res) => {
+        let data = "";
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+        res.on("end", () => {
+          resolve(data.trim());
+        });
+      })
+      .on("error", (err) => {
+        console.error(`Error connecting to pingpong service: ${err.message}`);
+        resolve("N/A (service unreachable)");
+      });
+  });
+};
 
 if (MODE === "writer") {
   // === WRITER MODE ===
-  const randomString = crypto.randomUUID();
-
-  const logStatus = () => {
+  const logStatus = async () => {
     const timestamp = new Date().toISOString();
-    const logLine = `${timestamp}: ${randomString}\n`;
+    const pongs = await fetchPongs();
 
-    // Overwrite the file with the latest timestamp and the same random string
-    fs.writeFileSync(FILE_PATH, logLine, "utf8");
-    console.log(`Wrote to shared file: ${logLine.trim()}`);
+    // Construct the payload matching the target output format
+    const logLine = `${timestamp}: ${randomString}.\nPing / Pongs: ${pongs}`;
+
+    console.log("=== Current Status ===");
+    console.log(logLine);
+    console.log("======================");
   };
 
   // Run immediately and repeat every 5 seconds
@@ -32,38 +54,29 @@ if (MODE === "writer") {
   setInterval(logStatus, 5000);
 } else {
   // === READER MODE (Web Server) ===
-  const server = http.createServer((req, res) => {
-    if (req.method === "GET" && req.url === "/status") {
-      try {
-        if (fs.existsSync(FILE_PATH)) {
-          const fileContent = fs.readFileSync(FILE_PATH, "utf8");
-          res.writeHead(200, { "Content-Type": "text/plain" });
-          return res.end(fileContent);
-        } else {
-          res.writeHead(200, { "Content-Type": "text/plain" });
-          return res.end(
-            "Waiting for log generator to write first status...\n",
-          );
-        }
-      } catch (err) {
-        res.writeHead(500, { "Content-Type": "text/plain" });
-        return res.end("Error reading status file\n");
-      }
+  const server = http.createServer(async (req, res) => {
+    // GET / endpoint to return the status directly to the browser
+    if (req.method === "GET" && req.url === "/") {
+      const timestamp = new Date().toISOString();
+      const pongs = await fetchPongs();
+
+      const responseText = `${timestamp}: ${randomString}.\nPing / Pongs: ${pongs}\n`;
+
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      return res.end(responseText);
     }
 
-    // Original SPA route
-    if (req.method === "GET" && req.url === "/") {
-      res.writeHead(200, { "Content-Type": "text/html" });
-      return res.end(htmlContent);
+    // Preserving the old status route if needed for compatibility
+    if (req.method === "GET" && req.url === "/status") {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      return res.end(latestStatus);
     }
 
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("404 Not Found");
   });
 
-  const htmlContent = `<!DOCTYPE html><html><body><h1>Vanilla Node SPA</h1></body></html>`;
-
   server.listen(PORT, "0.0.0.0", () => {
-    console.log(`Web server started in port ${PORT}`);
+    console.log(`Web server started on port ${PORT}`);
   });
 }

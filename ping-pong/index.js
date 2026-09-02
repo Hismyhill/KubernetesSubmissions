@@ -13,6 +13,13 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/plain" });
     return res.end(responseText);
   }
+  if (req.method === "GET" && req.url === "/pings") {
+    const responseText = `${requestCounter}\n`;
+    requestCounter++; // Increment the in-memory counter
+
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    return res.end(responseText);
+  }
 
   // Fallback route
   res.writeHead(404, { "Content-Type": "text/plain" });
