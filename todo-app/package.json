@@ -4,7 +4,10 @@
   "description": "Outputs a random memory-stored string every 5 seconds",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js --watch"
   },
-  "dependencies": {}
+  "dependencies": {
+    "axios": "^1.20.0",
+    "express": "^5.2.1"
+  }
 }

@@ -17,5 +17,7 @@ spec:
           image: hismyhill/todo-app:latest
           imagePullPolicy: IfNotPresent
           env:
+            - name: BACKEND_URL
+              value: "http://todo-app-svc:2345/todos"
             - name: PORT
               value: "3000"

@@ -8,5 +8,5 @@ spec:
     app: todo-app
   ports:
     - protocol: TCP
-      port: 1234
+      port: 2345
       targetPort: 3000
