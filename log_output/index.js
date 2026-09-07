@@ -1,19 +1,30 @@
 // index.js
 const http = require("http");
 const crypto = require("crypto");
+const fs = require("fs"); // Added missing import to allow file operations
 
 const PORT = process.env.PORT || 3000;
 const MODE = process.env.MODE || "reader"; // Options: "writer" or "reader"
 
 // Read the internal Kubernetes service URL from environment variables
 const PINGPONG_URL =
-  process.env.PINGPONG_URL || "http://pingpong-svc:2523/pings";
+  process.env.PINGPONG_URL || "http://ping-pong-svc:8666/pings";
 
-// State variable to store the latest logs globally in application memory
-let latestStatus = "Waiting for data...";
+const CONFIG_FILE_PATH = "/usr/share/app/config/information.txt";
 
 // Generate the random string once upon application initialization
 const randomString = crypto.randomUUID();
+
+const getConfigFileContent = () => {
+  try {
+    if (fs.existsSync(CONFIG_FILE_PATH)) {
+      return fs.readFileSync(CONFIG_FILE_PATH, "utf8").trim();
+    }
+  } catch (err) {
+    console.error("Error reading config file:", err.message);
+  }
+  return "file missing or unreadable";
+};
 
 // Helper function to fetch the current pong counter from the ping-pong app via HTTP
 const fetchPongs = () => {
@@ -30,7 +41,7 @@ const fetchPongs = () => {
       })
       .on("error", (err) => {
         console.error(`Error connecting to pingpong service: ${err.message}`);
-        resolve("N/A (service unreachable)");
+        resolve("N/A");
       });
   });
 };
@@ -40,13 +51,14 @@ if (MODE === "writer") {
   const logStatus = async () => {
     const timestamp = new Date().toISOString();
     const pongs = await fetchPongs();
+    const fileContent = getConfigFileContent();
+    const envMessage = process.env.MESSAGE || "not set";
 
-    // Construct the payload matching the target output format
-    const logLine = `${timestamp}: ${randomString}.\nPing / Pongs: ${pongs}`;
-
-    console.log("=== Current Status ===");
-    console.log(logLine);
-    console.log("======================");
+    // Prints exactly matching your task format structure
+    console.log(`file content: ${fileContent}`);
+    console.log(`env variable: MESSAGE=${envMessage}`);
+    console.log(`${timestamp}: ${randomString}.`);
+    console.log(`Ping / Pongs: ${pongs}`);
   };
 
   // Run immediately and repeat every 5 seconds
@@ -59,17 +71,14 @@ if (MODE === "writer") {
     if (req.method === "GET" && req.url === "/") {
       const timestamp = new Date().toISOString();
       const pongs = await fetchPongs();
+      const fileContent = getConfigFileContent();
+      const envMessage = process.env.MESSAGE || "not set";
 
-      const responseText = `${timestamp}: ${randomString}.\nPing / Pongs: ${pongs}\n`;
+      // Aggregated response output matching style expectations
+      const responseText = `file content: ${fileContent}\nenv variable: MESSAGE=${envMessage}\n${timestamp}: ${randomString}.\nPing / Pongs: ${pongs}\n`;
 
       res.writeHead(200, { "Content-Type": "text/plain" });
       return res.end(responseText);
-    }
-
-    // Preserving the old status route if needed for compatibility
-    if (req.method === "GET" && req.url === "/status") {
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      return res.end(latestStatus);
     }
 
     res.writeHead(404, { "Content-Type": "text/plain" });

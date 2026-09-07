@@ -17,12 +17,24 @@ spec:
         - name: log-output-server
           image: hismyhill/log_output:latest
           imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
           env:
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: log-output-config
+                  key: MESSAGE
             - name: MODE
               value: "reader" # Standard server mode which fetches and serves HTTP data
             - name: PINGPONG_URL
-              value: "http://ping-pong-svc:8666/pings" # Update with your exact Ping Pong service name/port
+              value: "http://ping-pong-svc:8666/pings" # Matches your 8666 cluster service port
             - name: PORT
               value: "3000"
-          ports:
-            - containerPort: 3000
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/app/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: log-output-config

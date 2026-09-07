@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log-output-config
+  namespace: exercises
+data:
+  # Environment variable mapping
+  MESSAGE: "hello world"
+
+  # File projection content mapping
+  information.txt: |
+    this text is from file
