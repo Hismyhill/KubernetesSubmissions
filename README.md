@@ -21,3 +21,4 @@
 - [2.2.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [2.3.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/namespace)
 - [2.4.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/namespace)
+- [2.5.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/log_output)
