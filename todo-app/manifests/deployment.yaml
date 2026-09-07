@@ -18,7 +18,18 @@ spec:
           image: hismyhill/todo-app:latest
           imagePullPolicy: IfNotPresent
           env:
-            - name: BACKEND_URL
-              value: "http://todo-app-svc:2345/todos"
             - name: PORT
-              value: "3000"
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: APP_PORT
+            - name: BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: INTERNAL_FETCH_URL
+            - name: CLIENT_POST_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: BROWSER_POST_PATH

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-app-config
+  namespace: exercises
+data:
+  APP_PORT: "3000"
+  # Internally point BACKEND_URL to its own internal data fetching route
+  INTERNAL_FETCH_URL: "http://localhost:3000/api/todos"
+  # Path location where the frontend form drops items
+  BROWSER_POST_PATH: "/todos"
