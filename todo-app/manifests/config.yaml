@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: todo-db-secrets
+  namespace: project-ns
+type: Opaque
+stringData:
+  # The values will automatically be base64-encoded by Kubernetes
+  POSTGRES_PASSWORD: "secure-todo-password"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-app-config
+  namespace: project-ns
+data:
+  APP_PORT: "3000"
+  # Internally point BACKEND_URL to its own internal data fetching route
+  INTERNAL_FETCH_URL: "http://localhost:3000/api/todos"
+  # Path location where the frontend form drops items
+  BROWSER_POST_PATH: "/todos"
+  # Database
+  POSTGRES_DB: "todo_db"
+  POSTGRES_USER: "todo_admin"
+  DATABASE_HOST: "todo-db-0.todo-db-service"
+  DATABASE_PORT: "5432"

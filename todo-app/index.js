@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { Pool } = require("pg"); // Added PostgreSQL connection module
 
 const app = express();
 
@@ -17,6 +18,21 @@ const IMAGE_PATH = path.join(DIR_PATH, "image.jpg");
 
 if (!fs.existsSync(DIR_PATH)) {
   fs.mkdirSync(DIR_PATH, { recursive: true });
+}
+
+// Set up PostgreSQL connection pool using the provided database URL string
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Create tables automatically if they do not exist inside your stateful set volume
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS todos (
+      id TEXT PRIMARY KEY,
+      text VARCHAR(140) NOT NULL
+    );
+  `);
 }
 
 // Layout configuration image caching logic
@@ -58,23 +74,36 @@ const getOrUpdateImage = async () => {
 
 app.use(express.json());
 
-// Local state tracking memory database store
-let initialTodos = [];
-
 // === API BACKEND ROUTE ENDPOINT ===
-// Fetches list of items (used for internal pod-to-pod network calls or local state rendering)
-app.get("/api/todos", (req, res) => {
-  res.json(initialTodos);
+// Fetches list of items directly from PostgreSQL
+app.get("/api/todos", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, text FROM todos");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database Read Error\n");
+  }
 });
 
-// Creates a new item
-app.post("/todos", (req, res) => {
+// Creates a new item inside PostgreSQL
+app.post("/todos", async (req, res) => {
   const text = req?.body.text;
   if (!text) {
     return res.status(400).send("Missing text field");
   }
-  initialTodos.push({ id: crypto.randomUUID(), text });
-  res.status(201).send("Todo created");
+
+  try {
+    const newId = crypto.randomUUID();
+    await pool.query("INSERT INTO todos (id, text) VALUES ($1, $2)", [
+      newId,
+      text,
+    ]);
+    res.status(201).send("Todo created");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database Write Error\n");
+  }
 });
 
 // Image serving proxy route
@@ -90,15 +119,16 @@ app.get("/image.jpg", (req, res) => {
 app.get("/", async (req, res) => {
   await getOrUpdateImage();
 
+  let currentTodos = [];
   try {
     // Intercepts and reads live list content using the configurable BACKEND_URL variable
     const response = await axios.get(BACKEND_URL, { timeout: 3000 });
-    initialTodos = response.data;
+    currentTodos = response.data;
   } catch (error) {
     console.error("Failed to collect backend data values:", error.message);
   }
 
-  const todoItemsMarkup = initialTodos
+  const todoItemsMarkup = currentTodos
     .map((todo) => `<li class="todo-item">${escapeHtml(todo.text)}</li>`)
     .join("\n");
 
@@ -160,7 +190,6 @@ function generateHtmlPage(todoMarkup, clientPostUrl) {
       if (!text) return;
 
       try {
-        // Form submits dynamically using configuration variables
         await fetch('${clientPostUrl}', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -178,6 +207,14 @@ function generateHtmlPage(todoMarkup, clientPostUrl) {
   `;
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Application online on port ${PORT}`);
-});
+// Ensure the schema is ready before binding port targets
+initDb()
+  .then(() => {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Application online on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection initialization failure:", err);
+    process.exit(1);
+  });
