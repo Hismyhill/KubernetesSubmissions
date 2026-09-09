@@ -24,3 +24,4 @@
 - [2.5.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/log_output)
 - [2.6.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [2.7.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/ping-pong)
+- [2.8.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
