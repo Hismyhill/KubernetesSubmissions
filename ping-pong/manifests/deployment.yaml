@@ -13,6 +13,17 @@ spec:
       labels:
         app: ping-pong
     spec:
+      # initContainers:
+      #   - name: wait-for-postgres
+      #     image: postgres:18
+      #     command:
+      #       - sh
+      #       - -c
+      #       - |
+      #         until pg_isready -h postgres-0.postgres-service -p 5432 -U postgres; do
+      #           echo "Waiting for database to be operational..."
+      #           sleep 2
+      #         done
       containers:
         - name: ping-pong
           image: hismyhill/ping-pong:latest
@@ -20,3 +31,5 @@ spec:
           env:
             - name: PORT
               value: "3001" # Ensure this matches the targetPort in the service
+            - name: DATABASE_URL
+              value: "postgres://postgres:secretpassword@postgres-0.postgres-service:5432/pingpong_db"
