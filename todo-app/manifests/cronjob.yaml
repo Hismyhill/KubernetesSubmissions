@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: random-wikipedia-todo-generator
+  namespace: project-ns
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: wikipedia-fetcher
+              image: postgres:15
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: todo-app-secrets
+                      key: POSTGRES_PASSWORD
+                - name: TODO_USER
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-app-config
+                      key: POSTGRES_USER
+                - name: TODO_DB
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-app-config
+                      key: POSTGRES_DB
+              command:
+                - sh
+                - -c
+                - |
+                  echo "Attempting to fetch a random Wikipedia article..."
+
+                  # Use wget (which exists in the postgres image) instead of curl
+                  WIKI_URL=$(wget --max-redirect=0 "https://wikipedia.org" 2>&1 | grep -Fi 'Location:' | awk '{print $2}' | tr -d '\r\n')
+
+                  if [ -z "$WIKI_URL" ]; then
+                     echo "Cluster internet/DNS offline. Using generic fallback link."
+                     WIKI_URL="https://wikipedia.org"
+                  fi
+
+                  TODO_TEXT="Read $WIKI_URL"
+                  echo "Generated text: $TODO_TEXT"
+
+                  RANDOM_ID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "task-$((RANDOM))")
+
+                  echo "Inserting into database..."
+                  psql -h todo-db-0.todo-db-service -U "$TODO_USER" -d "$TODO_DB" -c "INSERT INTO todos (id, text) VALUES ('$RANDOM_ID', '$TODO_TEXT');"
