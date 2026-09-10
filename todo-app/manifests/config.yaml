@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: todo-db-secrets
+  name: todo-app-secrets
   namespace: project-ns
 type: Opaque
 stringData:

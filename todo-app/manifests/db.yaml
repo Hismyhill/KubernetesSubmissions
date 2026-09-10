@@ -34,17 +34,17 @@ spec:
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
-                  name: todo-db-config
+                  name: todo-app-config
                   key: POSTGRES_DB
             - name: POSTGRES_USER
               valueFrom:
                 configMapKeyRef:
-                  name: todo-db-config
+                  name: todo-app-config
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: todo-db-secrets
+                  name: todo-app-secrets
                   key: POSTGRES_PASSWORD
           ports:
             - containerPort: 5432

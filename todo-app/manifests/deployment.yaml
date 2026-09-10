@@ -33,32 +33,32 @@ spec:
                 configMapKeyRef:
                   name: todo-app-config
                   key: BROWSER_POST_PATH
-            - name: DATABASE_URL
-              value: "postgres://$(TODO_USER):$(TODO_PASSWORD)@$(TODO_HOST):$(TODO_PORT)/$(TODO_DB)"
             - name: TODO_USER
               valueFrom:
                 configMapKeyRef:
-                  name: todo-db-config
+                  name: todo-app-config
                   key: POSTGRES_USER
             - name: TODO_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: todo-db-secrets
+                  name: todo-app-secrets
                   key: POSTGRES_PASSWORD
             - name: TODO_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: todo-db-config
+                  name: todo-app-config
                   key: DATABASE_HOST
             - name: TODO_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: todo-db-config
+                  name: todo-app-config
                   key: DATABASE_PORT
             - name: TODO_DB
               valueFrom:
                 configMapKeyRef:
-                  name: todo-db-config
+                  name: todo-app-config
                   key: POSTGRES_DB
+            - name: DATABASE_URL
+              value: "postgres://$(TODO_USER):$(TODO_PASSWORD)@$(TODO_HOST):$(TODO_PORT)/$(TODO_DB)"
           ports:
             - containerPort: 3000
