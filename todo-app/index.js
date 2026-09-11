@@ -75,6 +75,27 @@ const getOrUpdateImage = async () => {
 app.use(express.json());
 
 // === API BACKEND ROUTE ENDPOINT ===
+
+// === REQUEST LOGGING MIDDLEWARE ===
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    // Structured JSON log format easily parsed by Promtail/Loki into Grafana
+    console.log(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.url,
+        status: res.statusCode,
+        durationMs: duration,
+        userAgent: req.get("User-Agent"),
+      }),
+    );
+  });
+  next();
+});
+
 // Fetches list of items directly from PostgreSQL
 app.get("/api/todos", async (req, res) => {
   try {
@@ -91,6 +112,14 @@ app.post("/todos", async (req, res) => {
   const text = req?.body.text;
   if (!text) {
     return res.status(400).send("Missing text field");
+  }
+
+  if (text.length > 140) {
+    // Explicit structural message that Grafana filters can easily match
+    console.warn(
+      `[VALIDATION FAILED] Todo rejected. Length was ${text.length} characters (Max: 140). Content snapshot: "${text.substring(0, 20)}..."`,
+    );
+    return res.status(400).send("Todo text cannot exceed 140 characters.");
   }
 
   try {
