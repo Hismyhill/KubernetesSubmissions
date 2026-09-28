@@ -28,7 +28,7 @@ spec:
             - name: MODE
               value: "reader" # Standard server mode which fetches and serves HTTP data
             - name: PINGPONG_URL
-              value: "http://ping-pong-svc:8666/pings" # Matches your 8666 cluster service port
+              value: "http://ping-pong-svc:8666/pingpong" # Matches your 8666 cluster service port
             - name: PORT
               value: "3000"
           volumeMounts:

@@ -53,13 +53,32 @@ app.use((req, res) => {
   res.status(404).type("text/plain").send("404 Not Found");
 });
 // Initialize database schema then start the server
-initDb()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Ping-Pong Express server started on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("Failed to initialize database:", err);
-    process.exit(1);
-  });
+// Function to connect and initialize database with retries
+async function initializeWithRetry() {
+  const maxRetries = 5;
+  let delay = 2000; // 2 seconds
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`Connecting to database (Attempt ${i + 1}/${maxRetries})...`);
+      await initDb();
+      console.log("Database initialized successfully!");
+
+      // Start server ONLY after successful DB initialization
+      app.listen(PORT, () => {
+        console.log(`Ping-Pong Express server started on port ${PORT}`);
+      });
+      return; // Exit function successfully
+    } catch (err) {
+      console.error(`Database connection failed: ${err.message}`);
+      if (i === maxRetries - 1) {
+        console.error("Max retries reached. Exiting...");
+        process.exit(1);
+      }
+      await new Promise((res) => setTimeout(res, delay));
+    }
+  }
+}
+
+// Replace your old startup block at the bottom with this:
+initializeWithRetry();
