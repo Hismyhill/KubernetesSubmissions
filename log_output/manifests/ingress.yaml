@@ -1,26 +1,26 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: shared-app-ingress
-  namespace: exercises
-spec:
-  rules:
-    - http:
-        paths:
-          # Route traffic for Log Output application
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: log-output-svc
-                port:
-                  number: 80
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: shared-app-ingress
+#   namespace: exercises
+# spec:
+#   rules:
+#     - http:
+#         paths:
+#           # Route traffic for Log Output application
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: log-output-svc
+#                 port:
+#                   number: 80
 
-          # Route traffic for Ping Pong application (adjust path/rewrites as needed)
-          - path: /pingpong
-            pathType: Prefix
-            backend:
-              service:
-                name: ping-pong-svc
-                port:
-                  number: 8666
+#           # Route traffic for Ping Pong application (adjust path/rewrites as needed)
+#           - path: /pingpong
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: ping-pong-svc
+#                 port:
+#                   number: 8666
