@@ -1,15 +1,31 @@
-apiVersion: gateway.networking.k8s.io/v1beta1
+apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: shared-route
+  name: shared-routes
 spec:
   parentRefs:
     - name: shared-gw
   rules:
+    # 1. Ping-pong Route with Prefix Rewrite
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /pingpong
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: pingpong-svc
+          port: 80
+
+    # 2. Log Output Route (Default fallback for everything else)
     - matches:
         - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: log-output-svc
+        - name: logoutput-svc
           port: 80
