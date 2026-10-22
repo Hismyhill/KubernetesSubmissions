@@ -62,6 +62,8 @@ jobs:
       # ...
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v3
+        with:
+          kustomize-version: v5.4.3
 
         # ...
       - name: Deploy
