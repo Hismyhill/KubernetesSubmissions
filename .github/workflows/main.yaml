@@ -63,7 +63,8 @@ jobs:
       - name: Deploy
         run: |-
           cd todo-app
+          kubectl config set-context --current --namespace=project-ns
           kustomize edit set image TODO_APP_IMAGE=$IMAGE_TAG
-          kustomize build . | kubectl apply -f -
+          kustomize build . | kubectl apply -f - 
           kubectl rollout status deployment $SERVICE
           kubectl get services -o wide
