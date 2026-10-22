@@ -54,7 +54,7 @@ jobs:
 
       # ...
       - name: Build
-        run: docker build --tag $IMAGE_TAG .
+        run: docker build -f todo-app/Dockerfile --tag $IMAGE_TAG todo-app/
 
       - name: Publish
         run: docker push $IMAGE_TAG
