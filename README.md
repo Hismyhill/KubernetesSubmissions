@@ -33,3 +33,4 @@
 - [3.4.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/log_output)
 - [3.5.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [3.6.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
+- [3.7.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)

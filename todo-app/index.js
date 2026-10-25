@@ -16,6 +16,18 @@ const CLIENT_POST_URL = process.env.CLIENT_POST_URL || "/todos";
 const DIR_PATH = process.env.VOLUME_PATH || path.join(os.tmpdir(), "app_files");
 const IMAGE_PATH = path.join(DIR_PATH, "image.jpg");
 
+const isJpegImage = (filePath) => {
+  try {
+    const signature = Buffer.alloc(3);
+    const imageFile = fs.openSync(filePath, "r");
+    fs.readSync(imageFile, signature, 0, signature.length, 0);
+    fs.closeSync(imageFile);
+    return signature[0] === 0xff && signature[1] === 0xd8 && signature[2] === 0xff;
+  } catch (err) {
+    return false;
+  }
+};
+
 if (!fs.existsSync(DIR_PATH)) {
   fs.mkdirSync(DIR_PATH, { recursive: true });
 }
@@ -37,39 +49,32 @@ async function initDb() {
 
 // Layout configuration image caching logic
 const downloadImage = async (url) => {
-  try {
-    const response = await axios({
-      method: "get",
-      url,
-      responseType: "stream",
-      headers: { "User-Agent": "Mozilla/5.0" },
-      timeout: 5000,
-    });
-    const fileStream = fs.createWriteStream(IMAGE_PATH);
-    response.data.pipe(fileStream);
-    return new Promise((resolve, reject) => {
-      fileStream.on("finish", () => {
-        fileStream.close();
-        if (fs.statSync(IMAGE_PATH).size === 0) {
-          fs.unlinkSync(IMAGE_PATH);
-          reject(new Error("Empty image"));
-        } else resolve();
-      });
-      fileStream.on("error", reject);
-    });
-  } catch (error) {
-    throw error;
+  const response = await axios({
+    method: "get",
+    url,
+    responseType: "arraybuffer",
+    headers: { "User-Agent": "Mozilla/5.0" },
+    timeout: 5000,
+  });
+  const image = Buffer.from(response.data);
+  if (!response.headers["content-type"]?.startsWith("image/") || image.length === 0) {
+    throw new Error("Image source returned a non-image response");
   }
+  fs.writeFileSync(IMAGE_PATH, image);
 };
 
 const getOrUpdateImage = async () => {
   if (fs.existsSync(IMAGE_PATH)) {
     try {
       const stats = fs.statSync(IMAGE_PATH);
-      if (stats.size > 0 && Date.now() - stats.mtimeMs < 10 * 60 * 1000) return;
+      if (
+        stats.size > 0 &&
+        isJpegImage(IMAGE_PATH) &&
+        Date.now() - stats.mtimeMs < 10 * 60 * 1000
+      ) return;
     } catch (err) {}
   }
-  await downloadImage("https://picsum.photos").catch(() => {});
+  await downloadImage("https://picsum.photos/640/360.jpg").catch(() => {});
 };
 
 app.use(express.json());
@@ -137,11 +142,11 @@ app.post("/todos", async (req, res) => {
 
 // Image serving proxy route
 app.get("/image.jpg", (req, res) => {
-  if (fs.existsSync(IMAGE_PATH) && fs.statSync(IMAGE_PATH).size > 0) {
+  if (isJpegImage(IMAGE_PATH)) {
     res.setHeader("Cache-Control", "no-cache");
     return res.sendFile(IMAGE_PATH);
   }
-  res.redirect("https://picsum.photos");
+  res.redirect("https://picsum.photos/640/360.jpg");
 });
 
 // === FRONTEND UI RENDER ROUTE ===
