@@ -64,10 +64,34 @@ jobs:
       - name: Deploy
         run: |-
           cd todo-app
-          kubectl create namespace ${GITHUB_REF#refs/heads/} || true
-          kubectl config set-context --current --namespace=${GITHUB_REF#refs/heads/}
-          kustomize edit set namespace ${GITHUB_REF#refs/heads/}
+
+          # 1. Clean the GitHub Reference to get the raw branch name
+          # (e.g., 'refs/heads/main' -> 'main', 'refs/heads/feature-login' -> 'feature-login')
+          RAW_BRANCH="${GITHUB_REF#refs/heads/}"
+
+          # 2. Enforce the environment routing conditional
+          if [ "$RAW_BRANCH" = "main" ]; then
+            TARGET_NAMESPACE="project"
+          else
+            # Assume your branches are named validly as per instructions
+            TARGET_NAMESPACE="$RAW_BRANCH"
+          fi
+
+          echo "Targeting Environment Namespace: $TARGET_NAMESPACE"
+
+          # 3. Create the isolated namespace if it doesn't already exist
+          kubectl create namespace "$TARGET_NAMESPACE" || true
+
+          # 4. Set the current kubectl context to point to this namespace
+          kubectl config set-context --current --namespace="$TARGET_NAMESPACE"
+
+          # 5. Inform Kustomize to update the target namespace manifests
+          kustomize edit set namespace "$TARGET_NAMESPACE"
           kustomize edit set image TODO_APP_IMAGE=$IMAGE_TAG
+
+          # 6. Build and apply manifests cleanly to the isolated target
           kustomize build . | kubectl apply -f - 
-          kubectl rollout status deployment $SERVICE
-          kubectl get services -o wide
+
+          # 7. Track the rollout status specifically inside the target environment
+          kubectl rollout status deployment $SERVICE -n "$TARGET_NAMESPACE"
+          kubectl get services -o wide -n "$TARGET_NAMESPACE"

@@ -34,3 +34,4 @@
 - [3.5.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [3.6.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
 - [3.7.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
+- [3.8.](https://github.com/Hismyhill/KubernetesSubmissions/tree/main/todo-app)
