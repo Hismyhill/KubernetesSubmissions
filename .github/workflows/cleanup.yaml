@@ -20,8 +20,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: "${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}"
-          service_account: "${{ secrets.SERVICE_ACCOUNT }}"
+          workload_identity_provider: "projects/676529415922/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "github-actions-sa@://gserviceaccount.com"
 
       - name: Set up GKE Credentials
         uses: google-github-actions/get-gke-credentials@v3
