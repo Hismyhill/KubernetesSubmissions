@@ -64,10 +64,22 @@ jobs:
       - name: Deploy
         run: |-
           cd todo-app
-          kubectl create namespace ${GITHUB_REF#refs/heads/} || true
-          kubectl config set-context --current --namespace=${GITHUB_REF#refs/heads/}
-          kustomize edit set namespace ${GITHUB_REF#refs/heads/}
+
+          # 1. Extract just the clean name (removes refs/heads/ or refs/tags/)
+          CLEAN_REF=$(echo "${GITHUB_REF}" | sed -E 's|refs/(heads|tags)/||')
+
+          # 2. Sanitize for Kubernetes (convert dots to hyphens, force lowercase)
+          K8S_NAMESPACE=$(echo "$CLEAN_REF" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+
+          echo "Targeting dynamic namespace: $K8S_NAMESPACE"
+
+          # 3. Execute cluster operations using the safe namespace variable
+          kubectl create namespace "$K8S_NAMESPACE" || true
+          kubectl config set-context --current --namespace="$K8S_NAMESPACE"
+
+          kustomize edit set namespace "$K8S_NAMESPACE"
           kustomize edit set image TODO_APP_IMAGE=$IMAGE_TAG
+
           kustomize build . | kubectl apply -f - 
-          kubectl rollout status deployment $SERVICE
-          kubectl get services -o wide
+          kubectl rollout status deployment $SERVICE -n "$K8S_NAMESPACE"
+          kubectl get services -o wide -n "$K8S_NAMESPACE"
