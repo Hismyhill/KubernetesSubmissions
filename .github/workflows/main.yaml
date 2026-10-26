@@ -71,7 +71,7 @@ jobs:
 
           # 2. Enforce the environment routing conditional
           if [ "$RAW_BRANCH" = "main" ]; then
-            TARGET_NAMESPACE="project"
+            TARGET_NAMESPACE="project-ns"
           else
             # Assume your branches are named validly as per instructions
             TARGET_NAMESPACE="$RAW_BRANCH"
